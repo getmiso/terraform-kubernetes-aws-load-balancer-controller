@@ -296,7 +296,9 @@ resource "aws_iam_policy" "this" {
                 "elasticloadbalancing:ModifyListener",
                 "elasticloadbalancing:AddListenerCertificates",
                 "elasticloadbalancing:RemoveListenerCertificates",
-                "elasticloadbalancing:ModifyRule"
+                "elasticloadbalancing:ModifyRule",
+                "elasticloadbalancing:AddTags",
+                "elasticloadbalancing:RemoveTags"
             ],
             "Resource": "*"
         }
