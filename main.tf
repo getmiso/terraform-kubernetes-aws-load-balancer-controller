@@ -83,14 +83,16 @@ resource "aws_iam_policy" "this" {
   path        = local.aws_iam_path_prefix
   # We use a heredoc for the policy JSON so that we can more easily diff and
   # copy/paste from upstream. Ignore whitespace when you diff to more easily see the changes!
-  # Source: `curl -o iam-policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.3.1/docs/install/iam_policy.json`
+  # Source: `curl -o iam-policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.4.5/docs/install/iam_policy.json`
   policy = <<-POLICY
 {
     "Version": "2012-10-17",
     "Statement": [
         {
             "Effect": "Allow",
-            "Action": "iam:CreateServiceLinkedRole",
+            "Action": [
+                "iam:CreateServiceLinkedRole"
+            ],
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -284,6 +286,28 @@ resource "aws_iam_policy" "this" {
         {
             "Effect": "Allow",
             "Action": [
+                "elasticloadbalancing:AddTags"
+            ],
+            "Resource": [
+                "arn:aws:elasticloadbalancing:*:*:targetgroup/*/*",
+                "arn:aws:elasticloadbalancing:*:*:loadbalancer/net/*/*",
+                "arn:aws:elasticloadbalancing:*:*:loadbalancer/app/*/*"
+            ],
+            "Condition": {
+                "StringEquals": {
+                    "elasticloadbalancing:CreateAction": [
+                        "CreateTargetGroup",
+                        "CreateLoadBalancer"
+                    ]
+                },
+                "Null": {
+                    "aws:RequestTag/elbv2.k8s.aws/cluster": "false"
+                }
+            }
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
                 "elasticloadbalancing:RegisterTargets",
                 "elasticloadbalancing:DeregisterTargets"
             ],
@@ -296,9 +320,7 @@ resource "aws_iam_policy" "this" {
                 "elasticloadbalancing:ModifyListener",
                 "elasticloadbalancing:AddListenerCertificates",
                 "elasticloadbalancing:RemoveListenerCertificates",
-                "elasticloadbalancing:ModifyRule",
-                "elasticloadbalancing:AddTags",
-                "elasticloadbalancing:RemoveTags"
+                "elasticloadbalancing:ModifyRule"
             ],
             "Resource": "*"
         }
